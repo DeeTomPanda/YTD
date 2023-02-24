@@ -59,7 +59,7 @@ const Search=()=>{
 		const unsubscribe = NetInfo.addEventListener(state => {
 			if(state.type.includes("cellular"))
   				Alert.alert("Info",`You're currently on ${state.type.toUpperCase()} data 
-					Please use Wi-Fi for faster downlaods`,
+					Please use Wi-Fi for faster downloads`,
 			[{text:"Ok"}],{cancelable:true})
 		})
 	},[])
