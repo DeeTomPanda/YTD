@@ -3,7 +3,6 @@ import axios from 'axios';
 import ReactNativeBlobUtil from 'react-native-blob-util';
 import Options from './Options.js';
 import NetInfo from "@react-native-community/netinfo";
-import { io } from 'socket.io-client';
 import ShareMenu, { ShareMenuReactView } from "react-native-share-menu";
 import styles from '.././styles/App.scss';
 import {
@@ -32,27 +31,29 @@ import {
 	setURL
 } from './../reducers/rootReducer.js';
 
-const API="http://ytdr.us-east-1.elasticbeanstalk.com";
-
-const socket=io(API,{
-	transports:['websocket']
-})
-
-socket.on("connect",()=>console.log("client side connected"))
-
+const API="https://ytdr.onrender.com";
+const API2=API.substr(API.indexOf(':')+3,API.length-1)
 
 const Search=()=>{
 
-	const [progress,setProgress]=React.useState('')
-	const [result,setResult]=React.useState(0)
+	var ws=new WebSocket(`ws://${API2}`)
+
+	const [progress,setProgress]=React.useState("0")
 	const [btn,setBtn]=React.useState('video')
 	const [isDownloadStart,setIsDownloadStart]=React.useState(false)
 	const [isDownloadComplete,setIsDownloadComplete]=React.useState(false)
 	const [yturl,setYTUrl]=React.useState('')
 	const [isLoading,setIsLoading]=React.useState(false)
+
 	const formats=useSelector((state)=>state.formats)
 	const IPref=React.useRef('')
 	const dispatch=useDispatch()
+	ws.onopen=()=>{
+		console.log("Connected!")
+		ws.onmessage=(e)=>{
+			console.log(e.data)
+			setProgress((prev)=>e.data)}
+	}
 
 	React.useEffect(()=>{
 
@@ -66,8 +67,7 @@ const Search=()=>{
 	
 	const handleShare=(item)=>{
 		if(item && item.mimeType=="text/plain")
-			setYTUrl(item.data)
-		console.log(yturl)}
+			setYTUrl(item.data)}
 
 
 	React.useEffect(() => {
@@ -81,11 +81,6 @@ const Search=()=>{
       			listener.remove();
     		};
   	}, []);
-
-
-
-	socket.on("data",(data)=>setProgress(data+" MB Downloaded")
-	)
 
 	//Loads the list of urls
 	const getVdoInfo=async(yturl)=>{
@@ -102,13 +97,17 @@ const Search=()=>{
 		.then((res)=>{
 			setIsLoading(false)
 			dispatch(setFormats(res.data))},
-		      (err)=>console.log(err))
-		console.log(IPref)
+		      (err)=>{
+			      Alert.alert("Error",err,[{text:"OK"}],{cancelable:true})
+			      setIsLoading(false)
+			      console.log(err)}
+		)
 	}
 	
 	//Downloads the media file from server
 	const download=async (title,id,type,format)=>{
-		
+	
+		console.log("Reached download")
 		const dirs= ReactNativeBlobUtil.fs.dirs
 		await ReactNativeBlobUtil.config({
 			fileCache:true
@@ -118,8 +117,7 @@ const Search=()=>{
 										id:id,
 			    							type:type}))
         	      .then(async(res) => {
-				
-			      
+				console.log("At RN blob util")	
 				await ReactNativeBlobUtil.MediaCollection.copyToMediaStore({
                         		name: `${title}${format}`, // Dynamic name of the file			
                         		parentFolder: '', // subdirectory in the Media Store	
@@ -130,10 +128,10 @@ const Search=()=>{
                     			'Download',  
                     			res.path() 
             				);
-
+			
             			console.log('The file saved to ', res.path())
 			      	setIsDownloadComplete(true)
-			        setProgress('')
+			        setProgress('0')
         			})
        }
 
@@ -161,7 +159,6 @@ const Search=()=>{
 		await axios.post(`${API}/getA&V`,bodydata)
 		      .then((res)=>{
 			      console.log(res.data)
-			      setResult(res.data)
 			      if(res.status>=200 && res.status <300)
 			          download(title,id,type,format)
 			      else 
@@ -185,7 +182,7 @@ const Search=()=>{
 		      <Button onPress={()=>getVdoInfo(yturl)}>
 		          <Text style={styles.submitBtn}>{"Get formats"}</Text>
 		      </Button>
-		      <Text style={styles.downloadText}>{`${progress}`}</Text>
+		      <Text style={styles.downloadText}>{`Encoding:${progress}MB encoded`}</Text>
 		   </View>
 		   <View style={styles.options}>
 		      { 
