@@ -67,7 +67,7 @@ const Search=()=>{
 	
 	const handleShare=(item)=>{
 		if(item && item.mimeType=="text/plain")
-			setYTUrl(item.data)}
+			setYTUrl(String(item.data.trim()))}
 
 
 	React.useEffect(() => {
