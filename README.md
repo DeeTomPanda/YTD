@@ -3,6 +3,7 @@ A React native app that downloads YouTube Videos
 
 <h3>Visuals</h3>
 
+![Screenshot_20230309_110613](https://user-images.githubusercontent.com/76088773/223932464-30d93a74-eee4-4b92-9cb6-5c81a359adbf.jpg)
 
 ![Screenshot_20230309_110608](https://user-images.githubusercontent.com/76088773/223930865-c559a122-3f77-4bb7-b6ad-11fc8ae87d09.jpg)
 ![Screenshot_20230309_110545](https://user-images.githubusercontent.com/76088773/223930993-875d526e-68c7-4380-8696-619671e25cd0.jpg)
